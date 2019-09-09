@@ -14,6 +14,7 @@ type CarbonFootprintDistanceOptions = {
 type CarbonFootprintFuelOptions = {
   fuel: {
     amount: number,
+    unit: 'gallons',
     type: string
   }
 }
@@ -35,6 +36,7 @@ export async function carbonFootprint(options: CarbonFootprintOptions): Promise<
     params.set('mode', options.distance.mode)
   } else if ('fuel' in options) {
     params.set('activity', String(options.fuel.amount))
+    params.set('activityType', 'fuel')
     params.set('fuelType', options.fuel.type);
   } else {
     throw new Error('Please provide a `fuel` or `distance` option')

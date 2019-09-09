@@ -1,6 +1,6 @@
 import {carbonFootprint} from '../trip-to-carbon'
 import getPort from 'get-port'
-import http, { ServerResponse, RequestListener, Server } from 'http';
+import http, { IncomingMessage, ServerResponse, RequestListener, Server } from 'http';
 
 describe('carbonFootprint',()=>{
   const fakeServers: Server[] = []
@@ -32,6 +32,10 @@ describe('carbonFootprint',()=>{
     res.end(JSON.stringify(toWrite))
   }
 
+  function parseUrlParams(req: IncomingMessage): URLSearchParams {
+    return new URL(req.url || '/', 'https://fake.example.com').searchParams
+  }
+
   afterEach(async () => {
     await Promise.all(fakeServers.map(server => (
       new Promise((resolve, reject) => {
@@ -47,19 +51,83 @@ describe('carbonFootprint',()=>{
     fakeServers.length = 0
   })
 
-  it('fetches a carbon footprint', async () => {
-    const server = await createFakeServer((_req, res) => {
-      json(res, {carbonFootprint: '1.23'})
+  describe('distance requests', () => {
+    it('returns the carbon footprint value from the server', async () => {
+      const server = await createFakeServer((_req, res) => {
+        json(res, {carbonFootprint: '1.23'})
+      })
+      expect(await carbonFootprint({
+        baseUrl: getBaseUrl(server),
+        country: 'USA',
+        distance: {
+          amount: 10,
+          unit: 'miles',
+          mode: 'taxi'
+        }
+      })).toEqual(1.23)
     })
 
-    expect(await carbonFootprint({
-      baseUrl: getBaseUrl(server),
-      country: 'USA',
-      distance: {
-        amount: 10,
-        unit: 'miles',
-        mode: 'taxi'
-      }
-    })).toEqual(1.23)
+    it('sends the right query parameters', async () => {
+      const server = await createFakeServer((req, res) => {
+        const searchParams = parseUrlParams(req)
+        expect(searchParams.get('activity')).toEqual('456')
+        expect(searchParams.get('activityType')).toEqual('miles')
+        expect(searchParams.get('mode')).toEqual('taxi')
+        expect(searchParams.get('country')).toEqual('usa')
+        expect(searchParams.has('fuelType')).toBeFalsy()
+
+        json(res, {carbonFootprint: '1.23'})
+      })
+
+      await carbonFootprint({
+        baseUrl: getBaseUrl(server),
+        country: 'USA',
+        distance: {
+          amount: 456,
+          unit: 'miles',
+          mode: 'taxi'
+        }
+      })
+    })
+  })
+
+  describe('fuel requests', () => {
+    it('returns the carbon footprint value from the server', async () => {
+      const server = await createFakeServer((_req, res) => {
+        json(res, {carbonFootprint: '1.23'})
+      })
+      expect(await carbonFootprint({
+        baseUrl: getBaseUrl(server),
+        country: 'USA',
+        fuel: {
+          amount: 456,
+          unit: 'gallons',
+          type: 'jetFuel'
+        }
+      })).toEqual(1.23)
+    })
+
+    it('sends the right query parameters', async () => {
+      const server = await createFakeServer((req, res) => {
+        const searchParams = parseUrlParams(req)
+        expect(searchParams.get('activity')).toEqual('456')
+        expect(searchParams.get('activityType')).toEqual('fuel')
+        expect(searchParams.get('fuelType')).toEqual('jetFuel')
+        expect(searchParams.get('country')).toEqual('gbr')
+        expect(searchParams.has('mode')).toBeFalsy()
+
+        json(res, {carbonFootprint: '1.23'})
+      })
+
+      await carbonFootprint({
+        baseUrl: getBaseUrl(server),
+        country: 'GBR',
+        fuel: {
+          amount: 456,
+          unit: 'gallons',
+          type: 'jetFuel'
+        }
+      })
+    })
   })
 })
