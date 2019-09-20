@@ -1,11 +1,11 @@
-import {carbonFootprint} from '../trip-to-carbon'
+import { carbonFootprint } from '../trip-to-carbon'
 import getPort from 'get-port'
-import http, { IncomingMessage, ServerResponse, RequestListener, Server } from 'http';
+import http, { IncomingMessage, ServerResponse, RequestListener, Server } from 'http'
 
-describe('carbonFootprint',()=>{
+describe('carbonFootprint', () => {
   const fakeServers: Server[] = []
 
-  function createFakeServer(requestListener: RequestListener): Promise<Server> {
+  function createFakeServer (requestListener: RequestListener): Promise<Server> {
     const result = http.createServer(requestListener)
     fakeServers.push(result)
     return getPort().then((port: number) => (
@@ -19,7 +19,7 @@ describe('carbonFootprint',()=>{
     ))
   }
 
-  function getBaseUrl(server: Server): string {
+  function getBaseUrl (server: Server): string {
     const address = server.address()
     if (!address || (typeof address !== 'object')) {
       throw new Error('Expected the server to have an object address')
@@ -27,12 +27,12 @@ describe('carbonFootprint',()=>{
     return `http://localhost:${address.port}`
   }
 
-  function json(res: ServerResponse, toWrite: unknown): void {
+  function json (res: ServerResponse, toWrite: unknown): void {
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     res.end(JSON.stringify(toWrite))
   }
 
-  function parseUrlParams(req: IncomingMessage): URLSearchParams {
+  function parseUrlParams (req: IncomingMessage): URLSearchParams {
     return new URL(req.url || '/', 'https://fake.example.com').searchParams
   }
 
@@ -54,7 +54,7 @@ describe('carbonFootprint',()=>{
   describe('distance requests', () => {
     it('returns the carbon footprint value from the server', async () => {
       const server = await createFakeServer((_req, res) => {
-        json(res, {carbonFootprint: '1.23'})
+        json(res, { carbonFootprint: '1.23' })
       })
       expect(await carbonFootprint({
         baseUrl: getBaseUrl(server),
@@ -76,7 +76,7 @@ describe('carbonFootprint',()=>{
         expect(searchParams.get('country')).toEqual('usa')
         expect(searchParams.has('fuelType')).toBeFalsy()
 
-        json(res, {carbonFootprint: '1.23'})
+        json(res, { carbonFootprint: '1.23' })
       })
 
       await carbonFootprint({
@@ -94,7 +94,7 @@ describe('carbonFootprint',()=>{
   describe('fuel requests', () => {
     it('returns the carbon footprint value from the server', async () => {
       const server = await createFakeServer((_req, res) => {
-        json(res, {carbonFootprint: '1.23'})
+        json(res, { carbonFootprint: '1.23' })
       })
       expect(await carbonFootprint({
         baseUrl: getBaseUrl(server),
@@ -116,7 +116,7 @@ describe('carbonFootprint',()=>{
         expect(searchParams.get('country')).toEqual('gbr')
         expect(searchParams.has('mode')).toBeFalsy()
 
-        json(res, {carbonFootprint: '1.23'})
+        json(res, { carbonFootprint: '1.23' })
       })
 
       await carbonFootprint({

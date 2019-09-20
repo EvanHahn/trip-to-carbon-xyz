@@ -18,7 +18,7 @@
     "prepublishOnly": "npm run build",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "lint": "echo 'TODO! This does not appear to work'",
+    "lint": "standard --fix **/*.ts",
     "test": "jest --config test/jest-config.json"
   },
   "dependencies": {
@@ -33,6 +33,7 @@
     "connect": "^3.7.0",
     "get-port": "^5.0.0",
     "jest": "^24.9.0",
+    "standard": "^14.3.1",
     "ts-jest": "^24.0.2",
     "typescript": "^3.6.2"
   },
@@ -40,6 +41,13 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
       "@typescript-eslint/eslint-plugin"
+    ],
+    "globals": [
+      "describe",
+      "it",
+      "expect",
+      "beforeEach",
+      "afterEach"
     ]
   }
 }
