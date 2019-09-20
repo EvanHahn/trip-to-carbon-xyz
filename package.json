@@ -7,6 +7,15 @@
   "keywords": [
     "triptocarbon.xyz"
   ],
+  "homepage": "https://github.com/EvanHahn/trip-to-carbon-xyz",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/EvanHahn/trip-to-carbon-xyz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EvanHahn/trip-to-carbon-xyz/issues",
+    "email": "me@evanhahn.com"
+  },
   "files": [
     "./dist/trip-to-carbon.js",
     "./dist/trip-to-carbon.d.ts"
