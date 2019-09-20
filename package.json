@@ -17,11 +17,13 @@
     "email": "me@evanhahn.com"
   },
   "files": [
-    "./dist/trip-to-carbon.js",
-    "./dist/trip-to-carbon.d.ts"
+    "README.md",
+    "LICENSE.txt",
+    "dist/trip-to-carbon.js",
+    "dist/trip-to-carbon.d.ts"
   ],
-  "main": "./dist/trip-to-carbon.js",
-  "typings": "./dist/trip-to-carbon.d.ts",
+  "main": "dist/trip-to-carbon.js",
+  "typings": "dist/trip-to-carbon.d.ts",
   "engines": {
     "node": ">=12.0.0"
   },
