@@ -3,10 +3,16 @@ trip-to-carbon
 
 A wrapper for the [Trip to Carbon API](https://triptocarbon.xyz/).
 
+Install it from npm:
+
+```sh
+npm install trip-to-carbon-xyz
+```
+
 Usage:
 
 ```javascript
-import { carbonFootprint } from '../trip-to-carbon'
+import { carbonFootprint } from 'trip-to-carbon-xyz'
 
 const taxiFootprint = await carbonFootprint({
   country: 'USA',
