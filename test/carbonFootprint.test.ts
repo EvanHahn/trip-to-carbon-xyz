@@ -1,12 +1,17 @@
 import { carbonFootprint } from '../trip-to-carbon'
+import express, { Request, Response } from 'express'
 import getPort from 'get-port'
-import http, { IncomingMessage, ServerResponse, RequestListener, Server } from 'http'
+import http, { Server } from 'http'
 
 describe('carbonFootprint', () => {
   const fakeServers: Server[] = []
 
-  function createFakeServer (requestListener: RequestListener): Promise<Server> {
-    const result = http.createServer(requestListener)
+  function createFakeServer (requestListener: (req: Request, res: Response) => void): Promise<Server> {
+    const app = express()
+    app.get('/v1/footprint', requestListener)
+
+    const result = http.createServer(app)
+
     fakeServers.push(result)
     return getPort().then((port: number) => (
       new Promise((resolve, reject) => {
@@ -27,15 +32,6 @@ describe('carbonFootprint', () => {
     return `http://localhost:${address.port}`
   }
 
-  function json (res: ServerResponse, toWrite: unknown): void {
-    res.setHeader('Content-Type', 'application/json; charset=utf-8')
-    res.end(JSON.stringify(toWrite))
-  }
-
-  function parseUrlParams (req: IncomingMessage): URLSearchParams {
-    return new URL(req.url || '/', 'https://fake.example.com').searchParams
-  }
-
   afterEach(async () => {
     await Promise.all(fakeServers.map(server => (
       new Promise((resolve, reject) => {
@@ -53,14 +49,13 @@ describe('carbonFootprint', () => {
 
   it('makes distance requests', async () => {
     const server = await createFakeServer((req, res) => {
-      const searchParams = parseUrlParams(req)
-      expect(searchParams.get('activity')).toEqual('10')
-      expect(searchParams.get('activityType')).toEqual('miles')
-      expect(searchParams.get('mode')).toEqual('taxi')
-      expect(searchParams.get('country')).toEqual('usa')
-      expect(searchParams.has('fuelType')).toBeFalsy()
+      expect(req.query.activity).toEqual('10')
+      expect(req.query.activityType).toEqual('miles')
+      expect(req.query.mode).toEqual('taxi')
+      expect(req.query.country).toEqual('usa')
+      expect(req.query.fuelType).toBeFalsy()
 
-      json(res, { carbonFootprint: '1.23' })
+      res.json({ carbonFootprint: '1.23' })
     })
     expect(await carbonFootprint({
       baseUrl: getBaseUrl(server),
@@ -75,14 +70,13 @@ describe('carbonFootprint', () => {
 
   it('makes fuel requests', async () => {
     const server = await createFakeServer((req, res) => {
-      const searchParams = parseUrlParams(req)
-      expect(searchParams.get('activity')).toEqual('456')
-      expect(searchParams.get('activityType')).toEqual('fuel')
-      expect(searchParams.get('fuelType')).toEqual('jetFuel')
-      expect(searchParams.get('country')).toEqual('gbr')
-      expect(searchParams.has('mode')).toBeFalsy()
+      expect(req.query.activity).toEqual('456')
+      expect(req.query.activityType).toEqual('fuel')
+      expect(req.query.fuelType).toEqual('jetFuel')
+      expect(req.query.country).toEqual('gbr')
+      expect(req.query.mode).toBeFalsy()
 
-      json(res, { carbonFootprint: '1.23' })
+      res.json({ carbonFootprint: '1.23' })
     })
 
     expect(await carbonFootprint({
@@ -94,5 +88,21 @@ describe('carbonFootprint', () => {
         type: 'jetFuel'
       }
     })).toEqual(1.23)
+  })
+
+  it('handles errors from the API', async () => {
+    const server = await createFakeServer((_req, res) => {
+      res.json({ errorMessage: 'bing bong' })
+    })
+
+    await expect(carbonFootprint({
+      baseUrl: getBaseUrl(server),
+      country: 'USA',
+      distance: {
+        amount: 10,
+        unit: 'miles',
+        mode: 'taxi'
+      }
+    })).rejects.toThrow('bing bong')
   })
 })
