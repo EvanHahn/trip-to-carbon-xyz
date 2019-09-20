@@ -32,15 +32,15 @@
     "@types/express": "^4.17.1",
     "@types/get-port": "^4.2.0",
     "@types/jest": "^24.0.18",
-    "@typescript-eslint/eslint-plugin": "^2.1.0",
-    "@typescript-eslint/parser": "^2.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.3.0",
+    "@typescript-eslint/parser": "^2.3.0",
     "connect": "^3.7.0",
     "express": "^4.17.1",
     "get-port": "^5.0.0",
     "jest": "^24.9.0",
     "standard": "^14.3.1",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.6.2"
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.6.3"
   },
   "standard": {
     "parser": "@typescript-eslint/parser",
