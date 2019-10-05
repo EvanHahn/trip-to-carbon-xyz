@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios from 'axios'
 
 interface CarbonFootprintBaseOptions {
   baseUrl?: string,
   country: string,
+  id?: string
 }
 type CarbonFootprintDistanceOptions = {
   distance: {
@@ -23,10 +24,12 @@ type CarbonFootprintOptions = CarbonFootprintBaseOptions & (
   CarbonFootprintFuelOptions
 )
 
-export async function carbonFootprint(options: CarbonFootprintOptions): Promise<number> {
+export async function carbonFootprint (options: CarbonFootprintOptions): Promise<number> {
   const baseUrl = 'baseUrl' in options ? options.baseUrl : 'https://api.triptocarbon.xyz'
-
   const params = new URLSearchParams()
+
+  if ('id' in options) params.set('id', options.id!)
+
   if ('distance' in options) {
     if ('fuel' in options) {
       throw new Error('The `fuel` and `distance` options are mutually exclusive')
@@ -37,13 +40,13 @@ export async function carbonFootprint(options: CarbonFootprintOptions): Promise<
   } else if ('fuel' in options) {
     params.set('activity', String(options.fuel.amount))
     params.set('activityType', 'fuel')
-    params.set('fuelType', options.fuel.type);
+    params.set('fuelType', options.fuel.type)
   } else {
     throw new Error('Please provide a `fuel` or `distance` option')
   }
   params.set('country', transformCountryOption(options.country))
 
-  const {data} = await axios.get('/v1/footprint', {
+  const { data } = await axios.get('/v1/footprint', {
     baseURL: baseUrl,
     params,
     validateStatus: alwaysTrue
@@ -58,12 +61,12 @@ export async function carbonFootprint(options: CarbonFootprintOptions): Promise<
   return parseFloat(data.carbonFootprint)
 }
 
-function alwaysTrue(): true {
+function alwaysTrue (): true {
   return true
 }
 
-function transformCountryOption(countryOption: string) {
-  const lowercased = countryOption.toLowerCase();
+function transformCountryOption (countryOption: string) {
+  const lowercased = countryOption.toLowerCase()
   switch (lowercased) {
     case 'usa':
     case 'gbr':

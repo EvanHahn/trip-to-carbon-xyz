@@ -32,4 +32,26 @@ const fuelFootprint = await carbonFootprint({
     type: 'jetFuel'
   }
 })
+//If you have an id token
+const taxiFootprint = await carbonFootprint({
+  country: 'USA',
+  id: 'SomeIdFromGottenTheSite',
+  distance: {
+    amount: 10,
+    unit: 'miles',
+    mode: 'taxi'
+  }
+})
+console.log(`Your 10-mile taxi trip had a carbon footprint of ${taxiFootprint} kilograms.`)
+
+const fuelFootprint = await carbonFootprint({
+  country: 'GBR',
+  id: 'SomeIdFromGottenTheSite'
+  fuel: {
+    amount: 456,
+    unit: 'gallons',
+    type: 'jetFuel'
+  }
+})
+
 ```
