@@ -15,8 +15,8 @@ Usage:
 import { carbonFootprint } from 'trip-to-carbon-xyz'
 
 const taxiFootprint = await carbonFootprint({
+  token: 'YourAppToken',  //optional
   country: 'USA',
-  token: 'YourAppToken',  //remove this property if you do not have a token
   distance: {
     amount: 10,
     unit: 'miles',
@@ -26,13 +26,12 @@ const taxiFootprint = await carbonFootprint({
 console.log(`Your 10-mile taxi trip had a carbon footprint of ${taxiFootprint} kilograms.`)
 
 const fuelFootprint = await carbonFootprint({
+  token: 'YourAppToken',  //optional
   country: 'GBR',
-  token: 'YourAppToken',  //remove this property if you do not have a token
   fuel: {
     amount: 456,
     unit: 'gallons',
     type: 'jetFuel'
   }
 })
-
 ```

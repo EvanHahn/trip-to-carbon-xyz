@@ -29,7 +29,9 @@ export async function carbonFootprint(options: CarbonFootprintOptions): Promise<
 
   const params = new URLSearchParams()
 
-  if('token' in options) params.set('appTkn', options.token!)
+  if('token' in options) {
+    params.set('appTkn', options.token!)
+  }
   if ('distance' in options) {
     if ('fuel' in options) {
       throw new Error('The `fuel` and `distance` options are mutually exclusive')
