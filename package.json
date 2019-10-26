@@ -32,7 +32,7 @@
     "prepublishOnly": "npm run build",
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
-    "lint": "standard --fix **/*.ts ; echo 'NOTE: linting currently fails; this is a known issue'",
+    "lint": "standardx --fix *.ts **/**.ts",
     "test": "jest --config test/jest-config.json"
   },
   "dependencies": {
@@ -49,11 +49,17 @@
     "express": "^4.17.1",
     "get-port": "^5.0.0",
     "jest": "^24.9.0",
-    "standard": "^14.3.1",
+    "standardx": "^5.0.0",
     "ts-jest": "^24.1.0",
     "typescript": "^3.6.4"
   },
-  "standard": {
+  "eslintConfig": {
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error"
+    }
+  },
+  "standardx": {
     "parser": "@typescript-eslint/parser",
     "plugins": [
       "@typescript-eslint/eslint-plugin"
