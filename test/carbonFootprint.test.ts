@@ -90,6 +90,25 @@ describe('carbonFootprint', () => {
     })).toEqual(1.23)
   })
 
+  it('allows a token', async () => {
+    const server = await createFakeServer((req, res) => {
+      expect(req.query.appTkn).toEqual('bingbong')
+
+      res.json({ carbonFootprint: '1.23' })
+    })
+
+    expect(await carbonFootprint({
+      token: 'bingbong',
+      baseUrl: getBaseUrl(server),
+      country: 'GBR',
+      fuel: {
+        amount: 456,
+        unit: 'gallons',
+        type: 'jetFuel'
+      }
+    })).toEqual(1.23)
+  })
+
   it('handles errors from the API', async () => {
     const server = await createFakeServer((_req, res) => {
       res.json({ errorMessage: 'bing bong' })

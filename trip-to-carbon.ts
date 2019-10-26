@@ -3,6 +3,7 @@ import axios from 'axios';
 interface CarbonFootprintBaseOptions {
   baseUrl?: string,
   country: string,
+  token?: string,
 }
 type CarbonFootprintDistanceOptions = {
   distance: {
@@ -27,6 +28,10 @@ export async function carbonFootprint(options: CarbonFootprintOptions): Promise<
   const baseUrl = 'baseUrl' in options ? options.baseUrl : 'https://api.triptocarbon.xyz'
 
   const params = new URLSearchParams()
+
+  if ('token' in options) {
+    params.set('appTkn', options.token!)
+  }
   if ('distance' in options) {
     if ('fuel' in options) {
       throw new Error('The `fuel` and `distance` options are mutually exclusive')
