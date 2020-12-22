@@ -34,7 +34,7 @@ describe('carbonFootprint', () => {
 
   afterEach(async () => {
     await Promise.all(fakeServers.map(server => (
-      new Promise((resolve, reject) => {
+      new Promise<void>((resolve, reject) => {
         server.close((err) => {
           if (err) {
             reject(err)
