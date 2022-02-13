@@ -1,7 +1,7 @@
 {
   "name": "trip-to-carbon-xyz",
   "description": "a light wrapper around triptocarbon.xyz",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "Evan Hahn <me@evanhahn.com> (https://evanhahn.com)",
   "license": "Unlicense",
   "keywords": [
