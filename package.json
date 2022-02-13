@@ -36,7 +36,7 @@
     "test": "jest --config test/jest-config.json"
   },
   "dependencies": {
-    "axios": "^0.21.4"
+    "axios": "^0.25.0"
   },
   "devDependencies": {
     "@types/connect": "^3.4.35",
