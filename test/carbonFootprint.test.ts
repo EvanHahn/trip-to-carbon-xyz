@@ -1,54 +1,48 @@
 import { carbonFootprint } from '../trip-to-carbon'
 import express, { Request, Response } from 'express'
-import getPort from 'get-port'
-import http, { Server } from 'http'
+import http from 'http'
+
+const TEST_PORT = 3000
 
 describe('carbonFootprint', () => {
-  const fakeServers: Server[] = []
+  let requestHandler: ((req: Request, res: Response) => void)
 
-  function createFakeServer (requestListener: (req: Request, res: Response) => void): Promise<Server> {
-    const app = express()
-    app.get('/v1/footprint', requestListener)
+  const testApp = express()
+  testApp.get('/v1/footprint', (req, res) => {
+    requestHandler(req, res)
+  })
+  const testServer = http.createServer(testApp)
 
-    const result = http.createServer(app)
+  const baseUrl = `http://localhost:${TEST_PORT}`
 
-    fakeServers.push(result)
-    return getPort().then((port: number) => (
-      new Promise((resolve, reject) => {
-        result.on('listening', () => {
-          resolve(result)
-        })
-        result.on('error', reject)
-        result.listen(port)
-      })
-    ))
-  }
+  beforeAll(() => (
+    new Promise((resolve, reject) => {
+      testServer.on('listening', resolve)
+      testServer.on('error', reject)
+      testServer.listen(TEST_PORT)
+    })
+  ))
 
-  function getBaseUrl (server: Server): string {
-    const address = server.address()
-    if (!address || (typeof address !== 'object')) {
-      throw new Error('Expected the server to have an object address')
+  beforeEach(() => {
+    requestHandler = () => {
+      throw new Error('Test request handler is not defined')
     }
-    return `http://localhost:${address.port}`
-  }
-
-  afterEach(async () => {
-    await Promise.all(fakeServers.map(server => (
-      new Promise<void>((resolve, reject) => {
-        server.close((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      })
-    )))
-    fakeServers.length = 0
   })
 
+  afterAll(() => (
+    new Promise<void>((resolve, reject) => {
+      testServer.close((err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve()
+        }
+      })
+    })
+  ))
+
   it('makes distance requests', async () => {
-    const server = await createFakeServer((req, res) => {
+    requestHandler = (req, res) => {
       expect(req.query.activity).toEqual('10')
       expect(req.query.activityType).toEqual('miles')
       expect(req.query.mode).toEqual('taxi')
@@ -56,9 +50,10 @@ describe('carbonFootprint', () => {
       expect(req.query.fuelType).toBeFalsy()
 
       res.json({ carbonFootprint: '1.23' })
-    })
+    }
+
     expect(await carbonFootprint({
-      baseUrl: getBaseUrl(server),
+      baseUrl,
       country: 'USA',
       distance: {
         amount: 10,
@@ -69,7 +64,7 @@ describe('carbonFootprint', () => {
   })
 
   it('makes fuel requests', async () => {
-    const server = await createFakeServer((req, res) => {
+    requestHandler = (req, res) => {
       expect(req.query.activity).toEqual('456')
       expect(req.query.activityType).toEqual('fuel')
       expect(req.query.fuelType).toEqual('jetFuel')
@@ -77,10 +72,10 @@ describe('carbonFootprint', () => {
       expect(req.query.mode).toBeFalsy()
 
       res.json({ carbonFootprint: '1.23' })
-    })
+    }
 
     expect(await carbonFootprint({
-      baseUrl: getBaseUrl(server),
+      baseUrl,
       country: 'GBR',
       fuel: {
         amount: 456,
@@ -91,15 +86,15 @@ describe('carbonFootprint', () => {
   })
 
   it('allows a token', async () => {
-    const server = await createFakeServer((req, res) => {
+    requestHandler = (req, res) => {
       expect(req.query.appTkn).toEqual('bingbong')
 
       res.json({ carbonFootprint: '1.23' })
-    })
+    }
 
     expect(await carbonFootprint({
       token: 'bingbong',
-      baseUrl: getBaseUrl(server),
+      baseUrl,
       country: 'GBR',
       fuel: {
         amount: 456,
@@ -110,18 +105,26 @@ describe('carbonFootprint', () => {
   })
 
   it('handles errors from the API', async () => {
-    const server = await createFakeServer((_req, res) => {
+    requestHandler = (_req, res) => {
       res.json({ errorMessage: 'bing bong' })
-    })
+    }
 
-    await expect(carbonFootprint({
-      baseUrl: getBaseUrl(server),
-      country: 'USA',
-      distance: {
-        amount: 10,
-        unit: 'miles',
-        mode: 'taxi'
-      }
-    })).rejects.toThrow('bing bong')
+    let err: unknown
+    try {
+      await carbonFootprint({
+        baseUrl,
+        country: 'USA',
+        distance: {
+          amount: 10,
+          unit: 'miles',
+          mode: 'taxi'
+        }
+      })
+    } catch (e) {
+      err = e
+    }
+
+    expect(err).toBeInstanceOf(Error)
+    expect((err as Error).message).toContain('bing bong')
   })
 })
